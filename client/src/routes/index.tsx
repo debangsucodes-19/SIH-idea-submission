@@ -21,5 +21,5 @@ export const router=createBrowserRouter([
   {path:"/profile",element:placeholder("Your profile","Your account and personal training profile will be available in a later phase.","Phase 2")},
   {path:"/settings",element:placeholder("Settings","Preferences and account settings will be available in a later phase.","Phase 2")},
  ]},
- {path:"*",element:<PublicLayout/>}
+ {path:"*",element:<PlaceholderPage title="Page not found" description="We couldn’t find the page you’re looking for." phase="404"/>}
 ]);
