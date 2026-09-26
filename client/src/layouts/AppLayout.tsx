@@ -1,0 +1,6 @@
+import { Menu } from "lucide-react";
+import { useState } from "react";
+import { Link, Outlet } from "react-router-dom";
+import { Sidebar } from "../components/Sidebar";
+
+export function AppLayout() { const [open,setOpen]=useState(false); return <div className="min-h-screen bg-[#f5f7f2]"><div className="flex min-h-screen"><Sidebar/><div className="min-w-0 flex-1"><header className="sticky top-0 z-10 flex h-[68px] items-center justify-between border-b border-slate-200 bg-white/90 px-5 backdrop-blur lg:px-8"><div className="flex items-center gap-3"><button className="lg:hidden" aria-label="Open navigation" onClick={()=>setOpen(!open)}><Menu/></button><span className="font-semibold">Your training space</span></div><Link to="/profile" className="grid h-9 w-9 place-items-center rounded-full bg-lime-200 text-sm font-bold" aria-label="Your profile">A</Link></header>{open&&<div className="border-b border-slate-200 bg-white p-4 lg:hidden"><nav className="grid grid-cols-2 gap-2">{["dashboard","workout","assessment","progress","diet","notifications","profile","settings"].map((path)=><Link key={path} onClick={()=>setOpen(false)} className="rounded-lg p-2 text-sm capitalize hover:bg-slate-50" to={`/${path}`}>{path}</Link>)}</nav></div>}<main className="mx-auto max-w-6xl px-5 py-8 lg:px-10 lg:py-10"><Outlet/></main></div></div></div>; }
