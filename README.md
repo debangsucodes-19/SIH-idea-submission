@@ -1,43 +1,49 @@
 # Strive — Fitness & Sports Performance Platform
 
-Strive is a modular foundation for a personalized fitness and sports performance platform. Football is the first supported sport; the configuration is designed to grow to cricket, basketball, tennis, athletics and more.
+Strive is a modular platform for personalized fitness and sports performance. Football is the first supported sport; the sport configuration is designed to grow to cricket, basketball, tennis, athletics and more.
 
-## Phase 1 scope
+## Current phases
 
-This repository contains the runnable product foundation: a responsive React client, a separate Express API, centralized routing, reusable UI primitives, shared domain types, sport profiles and an API health endpoint. Feature screens remain clearly identified placeholders. There is no active authentication, database, pose analysis, camera, AI/ML, workout or diet generation, assessment logic, notifications service or trial discovery.
+### Phase 1 — Foundation
+
+Responsive React client, Express API, centralized routing, reusable UI, domain types, sport profiles and API health endpoint.
+
+### Phase 2 — Identity and profiles
+
+Google OAuth sign-in, signed HTTP-only session cookies, PostgreSQL-backed user records, protected dashboard routes, onboarding, profile persistence and sign-out.
+
+AI/pose analysis, camera access, training generation, assessments, nutrition recommendations, notifications and sports-trial discovery remain future phases. Their screens do not claim to provide those features yet.
 
 ## Technology
 
 - **Client:** React, TypeScript, Vite, Tailwind CSS v4, React Router and Lucide React
-- **Server:** Node.js, Express, TypeScript and CORS
-- **Future:** PostgreSQL, Google OAuth and MediaPipe Pose Landmarker are intentionally out of scope for this phase.
+- **Server:** Node.js, Express, TypeScript, Google Auth Library and PostgreSQL (`pg`)
+- **Database:** PostgreSQL; the server creates the Phase 2 user/profile tables at startup.
 
 ## Structure
 
 ```text
-client/                  React application
-  public/                Static assets
-  src/components/        Navigation and reusable UI
-  src/config/             Sport configuration
-  src/layouts/            Public and dashboard layouts
-  src/pages/              Landing, login and placeholder pages
-  src/routes/             Central route configuration
-  src/services/           API client
-  src/types/              Frontend domain types
-server/                  Independent Express API
-  src/config/              Environment configuration
-  src/controllers/         Request handlers
-  src/middleware/          404 and error handling
-  src/routes/              API routes
-  src/app.ts               Express application
-  src/server.ts            HTTP entry point
+client/                    React application
+  src/components/          Navigation and reusable UI
+  src/config/               Sport configuration
+  src/hooks/                Authentication state
+  src/layouts/              Public and dashboard layouts
+  src/pages/                Landing, login, onboarding and profile pages
+  src/routes/               Central routes and auth guard
+  src/services/             API client
+  src/types/                Frontend domain types
+server/                    Independent Express API
+  src/config/                Environment and PostgreSQL setup
+  src/controllers/           OAuth, profile and health handlers
+  src/middleware/            Authentication and error handling
+  src/routes/                API routes
+  src/app.ts                 Express application
+  src/server.ts              HTTP entry point
 ```
 
-## Requirements
+## Requirements and install
 
-Node.js 20 or newer and npm.
-
-## Install
+Use Node.js 20 or newer, npm and PostgreSQL.
 
 From the repository root:
 
@@ -47,7 +53,7 @@ npm --prefix client install
 npm --prefix server install
 ```
 
-Copy the example environment files before running. On Windows PowerShell:
+Copy the example environment files. In Windows PowerShell:
 
 ```powershell
 Copy-Item client/.env.example client/.env
@@ -61,22 +67,26 @@ cp client/.env.example client/.env
 cp server/.env.example server/.env
 ```
 
-## Run
+## Configure Phase 2 sign-in
 
-Run both applications in separate terminals:
+1. Create a PostgreSQL database named `fitness_platform`.
+2. In `server/.env`, set `DATABASE_URL` to its connection string and replace the `SESSION_SECRET` example with a random secret of at least 32 characters.
+3. Create a Google OAuth **Web application** client. Add `http://localhost:5173` as an authorized JavaScript origin and `http://localhost:5000/api/auth/google/callback` as an authorized redirect URI.
+4. Put the resulting client ID and secret in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `server/.env`. Keep `.env` files private and out of Git.
 
-```bash
-npm run dev:client
-npm run dev:server
-```
+The server creates the `users` and `user_profiles` tables when it starts. Google sign-in is disabled until the OAuth credentials, PostgreSQL connection and session secret are configured. Without those values, the client and API still start, and the login screen explains what is missing.
 
-Or run both together (after installing root dependencies):
+## Run locally
+
+From the repository root:
 
 ```bash
 npm run dev
 ```
 
-Open <http://localhost:5173>. The API listens at <http://localhost:5000>; its health endpoint is <http://localhost:5000/api/health>.
+Open <http://localhost:5173>. The API listens on <http://localhost:5000> and its health endpoint is <http://localhost:5000/api/health>.
+
+Run either service separately with `npm run dev:client` or `npm run dev:server`.
 
 ## Build
 
@@ -90,31 +100,22 @@ npm run build
 
 | File | Variable | Purpose |
 |---|---|---|
-| `client/.env.example` | `VITE_API_BASE_URL` | Base URL for the API service |
+| `client/.env.example` | `VITE_API_BASE_URL` | API base URL |
 | `server/.env.example` | `PORT` | API listening port |
-| `server/.env.example` | `NODE_ENV` | Runtime environment |
-| `server/.env.example` | `CLIENT_URL` | Allowed browser origin for CORS |
+| `server/.env.example` | `NODE_ENV` | Runtime environment; enables secure cookies in production |
+| `server/.env.example` | `CLIENT_URL` | Allowed browser origin and OAuth return destination |
+| `server/.env.example` | `DATABASE_URL` | PostgreSQL connection string |
+| `server/.env.example` | `GOOGLE_CLIENT_ID` | Google OAuth web client ID |
+| `server/.env.example` | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `server/.env.example` | `GOOGLE_CALLBACK_URL` | OAuth callback registered with Google |
+| `server/.env.example` | `SESSION_SECRET` | At least 32 characters for signing session cookies |
 
-Secrets and future-phase variables are not included. Keep real `.env` files out of version control.
+## Routes and API
 
-## API
+Public pages: `/` and `/login`. Sign-in and profile routes are protected: `/onboarding`, `/sports`, `/dashboard`, `/assessment`, `/workout`, `/progress`, `/diet`, `/notifications`, `/profile` and `/settings`.
 
-`GET /api/health` responds with:
+The API includes `GET /api/health`, `GET /api/auth/status`, Google OAuth start/callback, `GET /api/auth/me`, `POST /api/auth/logout` and authenticated `PUT /api/profile`.
 
-```json
-{ "success": true, "message": "Fitness Platform API is running" }
-```
+## Next phases
 
-## Routes
-
-`/` Landing · `/login` Login placeholder · `/onboarding` Onboarding placeholder · `/sports` Sport selection · `/dashboard` Overview · `/assessment` Assessment · `/workout` Workout · `/progress` Progress · `/diet` Nutrition · `/notifications` Notifications · `/profile` Profile · `/settings` Settings.
-
-Future dashboard routes are accessible during Phase 1 and are not protected by authentication.
-
-## Development phases
-
-- **Phase 1 — Foundation:** project setup, presentation, routing, types, sport configuration and health endpoint.
-- **Phase 2 — Identity and profiles:** Google OAuth and onboarding/profile persistence.
-- **Later phases:** database-backed training, sports assessments, camera/pose analysis, AI recommendations, nutrition, notifications and discovery features.
-
-No placeholder screen claims that future functionality is active.
+Phase 2 covers identity and basic profile persistence. Future work can add assessment logic, sport-specific training, camera-based pose analysis, recommendations, nutrition, notifications and discovery features.
