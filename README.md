@@ -1,6 +1,4 @@
-# Sports Portal — Camera Fixed
-
-## Run correctly
+# Sports Portal
 
 Because this app uses the browser webcam API, run it through localhost instead of double-clicking the HTML file.
 
